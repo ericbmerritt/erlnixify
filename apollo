@@ -1,0 +1,85 @@
+#! /usr/bin/ruby
+#
+# This script serves as a manager/monitor for the Apollo System. Its
+# main job is to 'front' the apollo process and provide proper
+# reaction to unix signals (which are the main way that systems are
+# managed on unix. It also monitors the apollo system and if it stops
+# responding, kills apollo and dies itself so that Apollo can be
+# automatically restarted.
+#
+NAME=apollo
+DESC="Apollo"
+HOME="/opt/Apollo"
+APOLLO_BASE="/opt/apollo"
+ERL_ROOT=Dir[APOLLO_BASE + "/erts-*"]
+COOKIE_FILE="/etc/apollo/cookie"
+NODE="apollo"
+TMPNODE="$NODE-tmp"
+HOSTNAME=`hostname -f`
+FULLNODE="#{NODE}@#{HOSTNAME}"
+COOKIE=`cat #{COOKIE_FILE}`
+
+# Wait for one minute for the app to come up
+TIMEOUT=60
+
+# erld heartbeat timeout, seconds
+HEARTBEAT=30
+
+# kill grace period, seconds
+GRACE=10
+
+ERL_COMMAND="#{APOLLO_BASE}/bin/apollo -name #{NODE} -setcookie '#{COOKIE}' +Ktrue +B -noinput -shutdown_time 5000 +W w"
+
+def halt_nicely(pid)
+  `#{ERL_ROOT}/bin/erl_call -n #{FULLNODE} -c '#{COOKIE}' -a 'init stop'`
+  sleep TIMEOUT
+  case is_running pid
+  when :running
+    halt_brutally pid
+  else
+    # nothing to see here
+  end
+end
+
+def halt_brutally(pid)
+  `#{ERL_ROOT}/bin/erl_call -n #{FULLNODE} -c '#{COOKIE}' -a 'init halt'`
+  sleep TIMEOUT
+  case is_running pid
+  when :running
+    external_kill pid
+  else
+    # nothing to see here
+  end
+end
+
+def external_kill(Pid)
+  Process.kill("KILL", Pid)
+  Process.exit!
+end
+
+
+def is_running(pid)
+  begin
+    Process.kill(0, pid)
+    :running
+  rescue Errno::ESRCH
+    :not_running
+  rescue
+    :unknown
+  end
+end
+
+def monitor_erlang(pid)
+
+end
+
+pid = Process.spawn({"HOME" => HOME}, ERL_COMMAND)
+
+sleep TIMEOUT
+
+case is_running pid
+when :running
+  monitor_erlang
+else
+  halt_nicely pid
+end
