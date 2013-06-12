@@ -48,14 +48,21 @@ module Erlnixify
 
       at_exit { self.external_kill }
 
-
       @log.debug "waiting for #{@settings[:startuptimeout]} seconds for startup"
       sleep @settings[:startuptimeout]
       self.monitor
     end
 
-
     def start_deamon
+      begin
+        self.status
+      rescue NodeError => msg
+        return self.raw_start_deamon
+      end
+      raise NodeError, "Already started"
+    end
+
+    def raw_start_deamon
       @log.debug "starting daemon"
       env = {}
       env["HOME"] = @settings[:home] if @settings[:home]
@@ -68,6 +75,10 @@ module Erlnixify
         @log.debug "Invalid command provided, raising error"
         raise NodeError, "Command does not exist"
       end
+
+      @log.debug "waiting for #{@settings[:startuptimeout]} seconds for startup"
+      sleep @settings[:startuptimeout]
+      self.status
     end
 
     def monitor
@@ -95,15 +106,27 @@ module Erlnixify
       end
     end
 
+    def status
+      begin
+        Timeout.timeout(@settings[:checktimeout]) do
+            self.raw_check
+        end
+      rescue Timeout::Error
+        self.halt_nicely
+        raise NodeError, "Check command timeout occurred"
+      end
+    end
+
     def raw_check
-      @log.debug "Checking the status of Pid #{@pid}"
       @log.debug "#{@check_command} =~ #{@checkregex}"
       result = `#{@check_command}`
-      @log.debug "got #{result}"
+      @log.debug "result #{result}"
       if not (result =~ @checkregex)
-        @log.debug "Check failed, halting system"
+        @log.info "invalid state"
         self.halt_nicely
         raise NodeError, "Node check failed"
+      else
+        @log.info "running"
       end
     end
 
@@ -122,8 +145,13 @@ module Erlnixify
     end
 
     def stop
-        @log.debug "Executing halt nicely: #{@halt_command}"
-        `#{@halt_command}`
+      @log.debug "Executing halt nicely: #{@halt_command}"
+      `#{@halt_command}`
+      if not $?
+        sleep @settings[:checkinterval]
+      else
+        raise NodeError, "Got status #{$?}"
+      end
     end
 
     def halt_nicely

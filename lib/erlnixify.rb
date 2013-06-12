@@ -10,21 +10,7 @@ module Erlnixify
     def self.main(args)
       @opts = Erlnixify::Opts.new(args)
       options = nil
-      begin
-        case @opts.command
-        when "start"
-          options = @opts.options[:start]
-        when "startdeamon"
-          options = @opts.options[:startdeamon]
-        when "stop"
-          options = @opts.options[:stop]
-        else
-          options = @opts.options[:start]
-        end
-      rescue Erlnixify::NodeError
-        exit 127
-      end
-
+      options = @opts.options[@opts.command]
       if options[:version]
         puts Erlnixify::VERSION
         exit 0
@@ -50,16 +36,22 @@ module Erlnixify
 
       @settings = Erlnixify::Settings.new(options)
       @node = Erlnixify::Node.new(@settings)
-      puts "-->#{@opts.command}"
       begin
         case @opts.command
-        when "start"
+        when :start
           @node.start
-        when "startdeamon"
+        when :startdeamon
           @node.start_deamon
           exit 0
-        when "stop"
+        when :stop
           @node.stop
+        when :status
+          begin
+            @node.status
+          rescue Exception => msg
+            puts "stopped", msg
+            exit 127
+          end
         else
           @node.start
         end
