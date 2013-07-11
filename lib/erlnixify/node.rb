@@ -24,17 +24,6 @@ module Erlnixify
       @log = Logger.new(STDOUT)
       @log.level = Logger::DEBUG
 
-      Signal.trap("TERM") do
-        self.halt_nicely
-        raise NodeError, "SIGTERM recieved, shutting down"
-      end
-
-      Signal.trap("INT") do
-        self.halt_nicely
-        raise NodeError, "SIGINT recieved, shutting down"
-      end
-
-      at_exit { self.external_kill }
     end
 
     def start
@@ -45,10 +34,30 @@ module Erlnixify
       begin
         @log.debug "spawning command '#{@command}' with #{env}"
         @pid = Process.spawn(env, @command)
+        Process.detach @pid
       rescue Errno::ENOENT
         @log.debug "Invalid command provided, raising error"
         raise NodeError, "Command does not exist"
       end
+
+      Signal.trap("TERM") do
+        # This is going to propagate to the running erlang
+        # node. Unfortunately, there is no way to stop that that I
+        # have found yet. Hopefully, in the near future we can resolve
+        # that.
+        raise NodeError, "SIGTERM recieved, shutting down"
+      end
+
+      Signal.trap("INT") do
+        # This is going to propagate to the running erlang
+        # node. Unfortunately, there is no way to stop that that I
+        # have found yet. Hopefully, in the near future we can resolve
+        # that.
+        raise NodeError, "SIGINT recieved, shutting down"
+      end
+
+      at_exit { self.external_kill }
+
 
       @log.debug "waiting for #{@settings[:startuptimeout]} seconds for startup"
       sleep @settings[:startuptimeout]
@@ -107,23 +116,28 @@ module Erlnixify
     end
 
     def halt_nicely
-      `#{@halt_command}`
-      sleep @settings[:checkinterval]
       if self.is_running?
+        @log.debug "Executing halt nicely: #{@halt_command}"
+        `#{@halt_command}`
+        sleep @settings[:checkinterval]
         self.halt_brutally
       end
     end
 
     def halt_brutally
-      `#{@brutal_halt_command}`
-      sleep @settings[:checkinterval]
       if self.is_running?
+        @log.debug "Executing halt brutally: #{@brutal_halt_command}"
+        `#{@brutal_halt_command}`
+        sleep @settings[:checkinterval]
         self.external_kill
       end
     end
 
     def external_kill
-      Process.kill("KILL", @pid) if @pid
+      if self.is_running?
+        @log.debug "Killing pid: #{@pid}"
+        Process.kill("KILL", @pid) if @pid
+      end
     end
 
     def interpolate_cmd(cmd)
