@@ -14,14 +14,13 @@ module Erlnixify
     CHECK_COMMAND = "erlang statistics [reductions]"
     CHECK_REGEX = "^{\\d+, \\d+}$"
 
-    def initialize(opts)
-      @options = opts
-      config = @options.options[:config]
+    def initialize(options)
+      config = options[:config]
 
       @settings = self.default_settings
 
       self.load! config if config
-      self.merge(@options.options)
+      self.merge(options)
       self.post_settings_setup
     end
 

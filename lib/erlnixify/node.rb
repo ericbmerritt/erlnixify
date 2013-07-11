@@ -1,4 +1,5 @@
 require 'logger'
+require 'timeout'
 require 'erlnixify/exceptions'
 
 module Erlnixify
@@ -27,18 +28,7 @@ module Erlnixify
     end
 
     def start
-      @log.debug "starting process"
-      env = {}
-      env["HOME"] = @settings[:home] if @settings[:home]
-
-      begin
-        @log.debug "spawning command '#{@command}' with #{env}"
-        @pid = Process.spawn(env, @command)
-        Process.detach @pid
-      rescue Errno::ENOENT
-        @log.debug "Invalid command provided, raising error"
-        raise NodeError, "Command does not exist"
-      end
+      self.start_deamon
 
       Signal.trap("TERM") do
         # This is going to propagate to the running erlang
@@ -62,6 +52,22 @@ module Erlnixify
       @log.debug "waiting for #{@settings[:startuptimeout]} seconds for startup"
       sleep @settings[:startuptimeout]
       self.monitor
+    end
+
+
+    def start_deamon
+      @log.debug "starting daemon"
+      env = {}
+      env["HOME"] = @settings[:home] if @settings[:home]
+
+      begin
+        @log.debug "spawning command '#{@command}' with #{env}"
+        @pid = Process.spawn(env, @command)
+        Process.detach @pid
+      rescue Errno::ENOENT
+        @log.debug "Invalid command provided, raising error"
+        raise NodeError, "Command does not exist"
+      end
     end
 
     def monitor
@@ -113,6 +119,11 @@ module Erlnixify
       else
         false
       end
+    end
+
+    def stop
+        @log.debug "Executing halt nicely: #{@halt_command}"
+        `#{@halt_command}`
     end
 
     def halt_nicely

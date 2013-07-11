@@ -28,7 +28,7 @@ Feature: Node
     When the check command times out
     Then the erlang node is halted
 
-  Scenario: Signal TERM
+    Scenario: Signal TERM
     Given a valid configuration
     And the erlang node is started
     When a term signal is recieved

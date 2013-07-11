@@ -18,5 +18,5 @@ task :console do
   exec 'irb -I lib -r startingscript.rb'
 end
 
-task :quality => [:reek, :features] do
+task :quality => [:features] do
 end
