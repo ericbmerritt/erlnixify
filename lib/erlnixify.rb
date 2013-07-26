@@ -40,8 +40,8 @@ module Erlnixify
         case @opts.command
         when :start
           @node.start
-        when :startdeamon
-          @node.start_deamon
+        when :startdaemon
+          @node.start_daemon
           exit 0
         when :stop
           @node.stop

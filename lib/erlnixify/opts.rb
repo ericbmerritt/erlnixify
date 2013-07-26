@@ -16,7 +16,7 @@ module Erlnixify
 
         banner = "Usage: erlnixify [options]"
 
-        command 'startdeamon' do
+        command 'startdaemon' do
           on :b, :release=, 'Release Root Directory'
           on :e, :erlang=, 'Erlang Root Directory'
           on :o, :home=, "The home directory to explicitly set"
@@ -40,7 +40,7 @@ module Erlnixify
           on :v, :version, "Show the Version"
 
           run do |opts, args|
-            cmd = :startdeamon
+            cmd = :startdaemon
           end
         end
 

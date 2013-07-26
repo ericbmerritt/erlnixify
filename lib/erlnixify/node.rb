@@ -28,7 +28,7 @@ module Erlnixify
     end
 
     def start
-      self.start_deamon
+      self.start_daemon
 
       Signal.trap("TERM") do
         # This is going to propagate to the running erlang
@@ -53,16 +53,16 @@ module Erlnixify
       self.monitor
     end
 
-    def start_deamon
+    def start_daemon
       begin
         self.status
       rescue NodeError => msg
-        return self.raw_start_deamon
+        return self.raw_start_daemon
       end
       raise NodeError, "Already started"
     end
 
-    def raw_start_deamon
+    def raw_start_daemon
       @log.debug "starting daemon"
       env = {}
       env["HOME"] = @settings[:home] if @settings[:home]
