@@ -16,7 +16,8 @@ module Erlnixify
         exit 0
       end
 
-      if not options[:command]
+      if ((@opts.command == "start" or
+           @opts.command == "startdeamon") and not options[:command])
         puts "missing command option, this is required"
         puts @opts.opts.help
         exit 1
@@ -33,7 +34,6 @@ module Erlnixify
         puts @opts.opts.help
         exit 1
       end
-
       @settings = Erlnixify::Settings.new(options)
       @node = Erlnixify::Node.new(@settings)
       begin
