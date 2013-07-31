@@ -16,7 +16,8 @@ module Erlnixify
   class Node
     def initialize(settings)
       @settings = settings
-      @command = @settings[:command] % settings.settings
+
+      @command = @settings[:command] % settings.settings if @settings[:command]
       @check_command = self.interpolate_cmd(@settings[:check])
       @halt_command = self.interpolate_cmd(SHUTDOWN_COMMAND)
       @brutal_halt_command = self.interpolate_cmd(BRUTAL_SHUTDOWN_COMMAND)
