@@ -17,7 +17,7 @@ module Erlnixify
       end
 
       if ((@opts.command == "start" or
-           @opts.command == "startdeamon") and not options[:command])
+           @opts.command == "startdaemon") and not options[:command])
         puts "missing command option, this is required"
         puts @opts.opts.help
         exit 1

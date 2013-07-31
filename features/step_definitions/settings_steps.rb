@@ -8,11 +8,11 @@ end
 
 Given(/^a settings file$/) do
   file = File.dirname(__FILE__) + '/../test_data/settings_config.yml'
-  @opts = Erlnixify::Opts.new(["startdeamon", "--config", file])
+  @opts = Erlnixify::Opts.new(["startdaemon", "--config", file])
 end
 
 When(/^I load that settings file$/) do
-  @settings = Erlnixify::Settings.new(@opts.options[:startdeamon])
+  @settings = Erlnixify::Settings.new(@opts.options[:startdaemon])
 end
 
 Then(/^the settings should be available in the settings object$/) do
@@ -27,14 +27,14 @@ end
 
 Given(/^an options object that contains config values$/) do
   file = File.dirname(__FILE__) + '/../test_data/settings_config.yml'
-  @opts = Erlnixify::Opts.new(["startdeamon", "--config", file,
+  @opts = Erlnixify::Opts.new(["startdaemon", "--config", file,
                                "--checkinterval", "100",
                                "--startuptimeout", "500",
                                "--cookie", "fubachu"])
 end
 
 When(/^a new settings file is loaded up using that options$/) do
-  @settings = Erlnixify::Settings.new(@opts.options[:startdeamon])
+  @settings = Erlnixify::Settings.new(@opts.options[:startdaemon])
 end
 
 Then(/^the command line options override the file options$/) do
@@ -52,7 +52,7 @@ Given(/^a lack of a config file and command line options$/) do
 end
 
 When(/^a settings are loaded$/) do
-  @settings = Erlnixify::Settings.new(@opts.options[:startdeamon])
+  @settings = Erlnixify::Settings.new(@opts.options[:startdaemon])
 end
 
 Then(/^that settings object contains sane defaults$/) do

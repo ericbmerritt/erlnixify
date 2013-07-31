@@ -1,12 +1,12 @@
 Given(/^a valid configuration$/) do
   hostname = `hostname -f`.strip
-  @opts = Erlnixify::Opts.new(["startdeamon", "--cookie", "fubachu",
+  @opts = Erlnixify::Opts.new(["startdaemon", "--cookie", "fubachu",
                                "--startuptimeout", "10",
                                "--checkinterval", "10",
                                "--name", "foo",
                                "--command", "erl -noshell -setcookie fubachu -name foo@#{hostname}"
                               ])
-  @settings = Erlnixify::Settings.new(@opts.options[:startdeamon])
+  @settings = Erlnixify::Settings.new(@opts.options[:startdaemon])
 end
 
 Then(/^no errors or problems occur$/) do
@@ -36,14 +36,14 @@ end
 
 Given(/^a valid configuration with invalid command$/) do
   hostname = `hostname -f`.strip
-  @opts = Erlnixify::Opts.new(["startdeamon",
+  @opts = Erlnixify::Opts.new(["startdaemon",
                                "--cookie", "fubachu",
                                "--startuptimeout", "10",
                                "--checkinterval", "10",
                                "--name", "foo",
                                "--command", "this should fail"
                               ])
-  @settings = Erlnixify::Settings.new(@opts.options[:startdeamon])
+  @settings = Erlnixify::Settings.new(@opts.options[:startdaemon])
 end
 
 When(/^the node fails$/) do
@@ -57,7 +57,7 @@ end
 
 Given(/^a valid configuration with invalid check command$/) do
   hostname = `hostname -f`.strip
-  @opts = Erlnixify::Opts.new(["startdeamon", "--cookie", "fubachu",
+  @opts = Erlnixify::Opts.new(["startdaemon", "--cookie", "fubachu",
                                "--startuptimeout", "10",
                                "--checkinterval", "10",
                                "--name", "foo",
@@ -65,7 +65,7 @@ Given(/^a valid configuration with invalid check command$/) do
                                "--check", "invalid check",
 
                               ])
-  @settings = Erlnixify::Settings.new(@opts.options[:startdeamon])
+  @settings = Erlnixify::Settings.new(@opts.options[:startdaemon])
 end
 
 When(/^the check fails$/) do
@@ -80,7 +80,7 @@ end
 Given(/^a valid configuration with a long running check comamnd$/) do
   check_time = 60 * 1000 # 60 seconds in milliseconds
   hostname = `hostname -f`.strip
-  @opts = Erlnixify::Opts.new(["startdeamon", "--cookie", "fubachu",
+  @opts = Erlnixify::Opts.new(["startdaemon", "--cookie", "fubachu",
                                "--startuptimeout", "10",
                                "--checkinterval", "10",
                                "--name", "foo",
@@ -88,7 +88,7 @@ Given(/^a valid configuration with a long running check comamnd$/) do
                                "--check", "timer sleep [#{check_time}]",
 
                               ])
-  @settings = Erlnixify::Settings.new(@opts.options[:startdeamon])
+  @settings = Erlnixify::Settings.new(@opts.options[:startdaemon])
 end
 
 When(/^the check command times out$/) do
